@@ -1,0 +1,166 @@
+{
+  "carrera": "Licenciatura en Informática",
+  "universidad": "Universidad Mayor de San Andrés (UMSA)",
+  "mencion": "Desarrollo de Software e Innovación Tecnológica",
+  "resolucion": "HCU 533/2022 (dic. 2022) · Estandarización HCU 055/2025 (feb. 2025)",
+  "semestres": [
+    {
+      "numero": 1,
+      "nombre": "Primer semestre",
+      "materias": [
+        { "codigo": "INF-111", "nombre": "Programación I", "prerequisitos": [], "requisitoEspecial": "Modalidad de admisión" },
+        { "codigo": "INF-112", "nombre": "Fundamentos digitales", "prerequisitos": [], "requisitoEspecial": "Modalidad de admisión" },
+        { "codigo": "INF-113", "nombre": "Programación web I", "prerequisitos": [], "requisitoEspecial": "Modalidad de admisión" },
+        { "codigo": "INF-114", "nombre": "Álgebra", "prerequisitos": [], "requisitoEspecial": "Modalidad de admisión" },
+        { "codigo": "INF-115", "nombre": "Cálculo I", "prerequisitos": [], "requisitoEspecial": "Modalidad de admisión" },
+        { "codigo": "INF-116", "nombre": "Física", "prerequisitos": [], "requisitoEspecial": "Modalidad de admisión" }
+      ]
+    },
+    {
+      "numero": 2,
+      "nombre": "Segundo semestre",
+      "materias": [
+        { "codigo": "INF-121", "nombre": "Programación II", "prerequisitos": ["INF-111"] },
+        { "codigo": "INF-122", "nombre": "Programación web II", "prerequisitos": ["INF-113"] },
+        { "codigo": "INF-123", "nombre": "Electrónica general I", "prerequisitos": ["INF-112", "INF-116"] },
+        { "codigo": "INF-124", "nombre": "Estadística I", "prerequisitos": ["INF-114"] },
+        { "codigo": "INF-125", "nombre": "Álgebra lineal", "prerequisitos": ["INF-114"] },
+        { "codigo": "INF-126", "nombre": "Cálculo II", "prerequisitos": ["INF-115"] }
+      ]
+    },
+    {
+      "numero": 3,
+      "nombre": "Tercer semestre",
+      "materias": [
+        { "codigo": "INF-131", "nombre": "Programación III", "prerequisitos": ["INF-121"] },
+        { "codigo": "INF-132", "nombre": "Base de datos I", "prerequisitos": ["INF-121"] },
+        { "codigo": "INF-133", "nombre": "Programación web III", "prerequisitos": ["INF-111", "INF-122"] },
+        { "codigo": "INF-134", "nombre": "Estadística II", "prerequisitos": ["INF-124"] },
+        { "codigo": "INF-135", "nombre": "Sistemas operativos", "prerequisitos": ["INF-121"] },
+        { "codigo": "TRA-136", "nombre": "Metodología de la investigación", "prerequisitos": ["INF-124", "INF-125"] }
+      ]
+    },
+    {
+      "numero": 4,
+      "nombre": "Cuarto semestre",
+      "materias": [
+        { "codigo": "INF-241", "nombre": "Análisis y diseño de sistemas I", "prerequisitos": ["INF-132"] },
+        { "codigo": "INF-242", "nombre": "Redes I", "prerequisitos": ["INF-135"] },
+        { "codigo": "INF-243", "nombre": "Investigación Operativa I", "prerequisitos": ["INF-134"] },
+        { "codigo": "INF-244", "nombre": "Introducción a la Robótica", "prerequisitos": ["INF-123", "INF-124"] },
+        { "codigo": "INF-245", "nombre": "Programación de dispositivos móviles I", "prerequisitos": ["INF-131", "INF-133"] },
+        { "codigo": "INF-246", "nombre": "Fundamentos de diseño y animación", "prerequisitos": ["INF-125", "INF-133"] }
+      ]
+    },
+    {
+      "numero": 5,
+      "nombre": "Quinto semestre",
+      "materias": [
+        { "codigo": "INF-251", "nombre": "Ingeniería de Software I", "prerequisitos": ["INF-241"] },
+        { "codigo": "INF-252", "nombre": "Base de datos II", "prerequisitos": ["INF-132"] },
+        { "codigo": "INF-253", "nombre": "Análisis y diseño de sistemas II", "prerequisitos": ["INF-241"] },
+        { "codigo": "INF-254", "nombre": "Programación de dispositivos móviles II", "prerequisitos": ["INF-245"] },
+        { "codigo": "TRA-256", "nombre": "Legislación informática y ética", "prerequisitos": [], "requisitoEspecial": "Tercer semestre vencido" },
+        { "codigo": "ELEC-1", "nombre": "Electiva I (Técnico Superior)", "prerequisitos": [], "requisitoEspecial": "En función del programa de Técnico Superior", "esComodin": true }
+      ]
+    },
+    {
+      "numero": 6,
+      "nombre": "Sexto semestre",
+      "materias": [
+        { "codigo": "INF-261", "nombre": "Ingeniería de Software II", "prerequisitos": ["INF-251"] },
+        { "codigo": "INF-262", "nombre": "Base de datos III", "prerequisitos": ["INF-252"] },
+        { "codigo": "INF-263", "nombre": "Desarrollo de aplicaciones multimedia", "prerequisitos": ["INF-246"] },
+        { "codigo": "INF-264", "nombre": "Emprendimiento e innovación tecnológica", "prerequisitos": ["TRA-256"] },
+        { "codigo": "INF-266", "nombre": "Taller de Técnico Superior", "prerequisitos": [], "requisitoEspecial": "Quinto semestre vencido" },
+        { "codigo": "ELEC-2", "nombre": "Electiva II (Técnico Superior)", "prerequisitos": [], "requisitoEspecial": "En función del programa de Técnico Superior", "esComodin": true }
+      ]
+    },
+    {
+      "numero": 7,
+      "nombre": "Séptimo semestre",
+      "materias": [
+        { "codigo": "INF-371", "nombre": "Seguridad de la información", "prerequisitos": ["INF-242"] },
+        { "codigo": "INF-372", "nombre": "Inteligencia Artificial", "prerequisitos": ["INF-262"] },
+        { "codigo": "INF-373", "nombre": "Métodos numéricos I", "prerequisitos": ["INF-126"] },
+        { "codigo": "TRA-374", "nombre": "Práctica profesional", "prerequisitos": [], "requisitoEspecial": "Quinto semestre vencido" },
+        { "codigo": "ELEC-3", "nombre": "Electiva III (mención)", "prerequisitos": [], "requisitoEspecial": "Sexto semestre vencido", "esComodin": true },
+        { "codigo": "ELEC-4", "nombre": "Electiva IV (mención)", "prerequisitos": [], "requisitoEspecial": "Sexto semestre vencido", "esComodin": true }
+      ]
+    },
+    {
+      "numero": 8,
+      "nombre": "Octavo semestre",
+      "materias": [
+        { "codigo": "INF-381", "nombre": "Simulación de sistemas", "prerequisitos": ["INF-243"] },
+        { "codigo": "INF-382", "nombre": "Ingeniería de software III", "prerequisitos": ["INF-261"] },
+        { "codigo": "INF-384", "nombre": "Taller de graduación I", "prerequisitos": [], "requisitoEspecial": "Séptimo semestre vencido" },
+        { "codigo": "ELEC-5", "nombre": "Electiva V (mención)", "prerequisitos": [], "requisitoEspecial": "Sexto semestre vencido", "esComodin": true },
+        { "codigo": "ELEC-6", "nombre": "Electiva VI (mención)", "prerequisitos": [], "requisitoEspecial": "Sexto semestre vencido", "esComodin": true }
+      ]
+    },
+    {
+      "numero": 9,
+      "nombre": "Noveno semestre",
+      "materias": [
+        { "codigo": "INF-391", "nombre": "Taller de graduación II", "prerequisitos": [], "requisitoEspecial": "Octavo semestre vencido" }
+      ]
+    }
+  ],
+  "tecnicosSuperiores": [
+    {
+      "nombre": "Desarrollo de Video Juegos",
+      "materias": [
+        { "codigo": "TVD-251", "nombre": "Electiva I. Programación gráfica", "prerequisitos": ["INF-246"] },
+        { "codigo": "TVD-261", "nombre": "Electiva II. Animación digital 2D y 3D", "prerequisitos": ["TVD-251"] }
+      ]
+    },
+    {
+      "nombre": "Desarrollo de Aplicaciones Web",
+      "materias": [
+        { "codigo": "TAW-251", "nombre": "Electiva I. Desarrollo web BackEnd", "prerequisitos": ["INF-133"] },
+        { "codigo": "TAW-261", "nombre": "Electiva II. Ingeniería Web", "prerequisitos": ["TAW-251"] }
+      ]
+    },
+    {
+      "nombre": "Informática Educativa",
+      "materias": [
+        { "codigo": "TIE-251", "nombre": "Electiva I. Administración de Entornos Virtuales de Aprendizaje y Cursos Abiertos Masivos en línea", "prerequisitos": ["INF-246"] },
+        { "codigo": "TIE-261", "nombre": "Electiva II. Desarrollo de software educativo", "prerequisitos": ["TIE-251"] }
+      ]
+    },
+    {
+      "nombre": "Desarrollo de Aplicaciones Móviles",
+      "materias": [
+        { "codigo": "TAM-251", "nombre": "Electiva I. Sistemas embebidos", "prerequisitos": ["INF-245"] },
+        { "codigo": "TAM-261", "nombre": "Electiva II. Desarrollo de aplicaciones móviles multiplataforma", "prerequisitos": ["TAM-251"] }
+      ]
+    }
+  ],
+  "electivasMencion": [
+    { "codigo": "INF-311", "nombre": "Minería de datos (Data Mining)" },
+    { "codigo": "INF-312", "nombre": "Bioinformática" },
+    { "codigo": "INF-313", "nombre": "Realidad aumentada y virtual" },
+    { "codigo": "INF-314", "nombre": "Inglés técnico" },
+    { "codigo": "INF-315", "nombre": "Preparación y evaluación de proyectos" },
+    { "codigo": "INF-316", "nombre": "Informática forense" },
+    { "codigo": "INF-317", "nombre": "Internet de las cosas" },
+    { "codigo": "INF-318", "nombre": "Computación en la nube" },
+    { "codigo": "INF-319", "nombre": "Programación a bajo nivel" },
+    { "codigo": "INF-320", "nombre": "Auditoría de sistemas" },
+    { "codigo": "INF-321", "nombre": "Cálculo III" },
+    { "codigo": "INF-322", "nombre": "Macrodatos y analítica de datos (Big Data)" },
+    { "codigo": "INF-323", "nombre": "Aprendizaje automático (Machine Learning)" },
+    { "codigo": "INF-324", "nombre": "Aprendizaje profundo (Deep Learning)" },
+    { "codigo": "INF-325", "nombre": "Derecho informático" },
+    { "codigo": "INF-326", "nombre": "Negociaciones y toma de decisiones" },
+    { "codigo": "INF-327", "nombre": "Inteligencia de negocios (Business Intelligence)" },
+    { "codigo": "INF-328", "nombre": "Visión por computadora" },
+    { "codigo": "INF-329", "nombre": "Procesamiento digital de imágenes" },
+    { "codigo": "INF-330", "nombre": "Informática médica" },
+    { "codigo": "INF-331", "nombre": "Investigación Operativa II" },
+    { "codigo": "INF-332", "nombre": "Hacking ético I (ética y vulnerabilidad de sistemas)" },
+    { "codigo": "INF-333", "nombre": "Redes II" },
+    { "codigo": "INF-334", "nombre": "Dirección de proyectos informáticos" }
+  ]
+}
