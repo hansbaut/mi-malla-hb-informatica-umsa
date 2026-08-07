@@ -1,10 +1,16 @@
 import { useState, useRef, useEffect } from "react";
 import mallaData from "./data/malla.json";
 
+// --- Claves de localStorage ---
+const STORAGE_KEY = "malla-informatica-progreso";
+const STORAGE_KEY_TS = "malla-informatica-tecnico-superior";
+const STORAGE_KEY_ELECTIVAS = "malla-informatica-electivas-elegidas";
+
 // --- Diccionario código -> nombre ---
 const nombresPorCodigo = {};
 mallaData.semestres.forEach((sem) => sem.materias.forEach((m) => (nombresPorCodigo[m.codigo] = m.nombre)));
 mallaData.tecnicosSuperiores.forEach((t) => t.materias.forEach((m) => (nombresPorCodigo[m.codigo] = m.nombre)));
+mallaData.electivasMencion.forEach((m) => (nombresPorCodigo[m.codigo] = m.nombre));
 
 // --- Lógica de "semestre vencido" ---
 const ORDINAL_A_NUMERO = {
@@ -55,13 +61,39 @@ function agruparPorAnio(semestres) {
   return anios;
 }
 
-function resolverMateria(materia, tsSeleccionado) {
-  if (!materia.esComodin || !tsSeleccionado) return materia;
-  const track = mallaData.tecnicosSuperiores.find((t) => t.nombre === tsSeleccionado);
-  if (!track) return materia;
-  if (materia.codigo === "ELEC-1") return track.materias[0];
-  if (materia.codigo === "ELEC-2") return track.materias[1];
-  return materia;
+const ELEC_TS = ["ELEC-1", "ELEC-2"];
+const ELEC_MENCION = ["ELEC-3", "ELEC-4", "ELEC-5", "ELEC-6"];
+
+function buscarComodin(codigo) {
+  for (const sem of mallaData.semestres) {
+    const found = sem.materias.find((m) => m.codigo === codigo);
+    if (found) return found;
+  }
+  return null;
+}
+
+// Resuelve un comodín (ELEC-1..6) a la materia real elegida, ya sea de Técnico
+// Superior (ELEC-1/2) o del pool de electivas de mención (ELEC-3..6).
+function resolverComodin(materiaOriginal, tsSeleccionado, electivasElegidas) {
+  if (!materiaOriginal.esComodin) return materiaOriginal;
+
+  if (ELEC_TS.includes(materiaOriginal.codigo)) {
+    if (!tsSeleccionado) return materiaOriginal;
+    const track = mallaData.tecnicosSuperiores.find((t) => t.nombre === tsSeleccionado);
+    if (!track) return materiaOriginal;
+    return materiaOriginal.codigo === "ELEC-1" ? track.materias[0] : track.materias[1];
+  }
+
+  if (ELEC_MENCION.includes(materiaOriginal.codigo)) {
+    const elegido = electivasElegidas[materiaOriginal.codigo];
+    if (!elegido) return materiaOriginal;
+    const real = mallaData.electivasMencion.find((m) => m.codigo === elegido);
+    if (!real) return materiaOriginal;
+    // Conserva el requisito real (ej. "Sexto semestre vencido") del casillero original
+    return { ...real, prerequisitos: [], requisitoEspecial: materiaOriginal.requisitoEspecial };
+  }
+
+  return materiaOriginal;
 }
 
 function Subtitulo({ materia }) {
@@ -131,7 +163,6 @@ function CheckboxSemestre({ sem, aprobadas, onToggle }) {
   );
 }
 
-// Sección "Elige tu Técnico Superior" - ahora vive DEBAJO del tablero, no en pestaña aparte
 function SeccionTecnicoSuperior({ tsSeleccionado, setTsSeleccionado, aprobadas, toggle }) {
   return (
     <div className="mt-8 pt-6 border-t border-gray-200">
@@ -198,14 +229,80 @@ function SeccionTecnicoSuperior({ tsSeleccionado, setTsSeleccionado, aprobadas, 
   );
 }
 
-// Ahora solo 2 pestañas: el Técnico Superior quedó integrado dentro de "Plan de estudios"
+// Etiquetas amigables para cada casillero, con su semestre
+const ETIQUETAS_SLOT = {
+  "ELEC-3": { nombre: "Electiva III", semestre: "7° semestre" },
+  "ELEC-4": { nombre: "Electiva IV", semestre: "7° semestre" },
+  "ELEC-5": { nombre: "Electiva V", semestre: "8° semestre" },
+  "ELEC-6": { nombre: "Electiva VI", semestre: "8° semestre" },
+};
+
+function SeccionElectivasMencion({ electivasElegidas, setElectivasElegidas, tsSeleccionado, aprobadas, toggle }) {
+  const setSlot = (slot, codigo) => {
+    setElectivasElegidas((prev) => ({ ...prev, [slot]: codigo || null }));
+  };
+
+  return (
+    <div>
+      <p className="text-sm text-gray-500 mb-1 max-w-xl">
+        Elige qué electiva de tu mención va en cada casillero del 7° y 8° semestre. Una vez elegida,
+        se refleja arriba en el Plan de estudios con su sigla, nombre y estado real. No puedes elegir
+        la misma electiva en dos casilleros distintos.
+      </p>
+      <p className="text-xs text-gray-400 italic mb-4 max-w-xl">
+        Nota: esto arma tu plan ideal — en la práctica, la universidad podría no abrir una electiva
+        puntual si no se junta un mínimo de estudiantes inscritos.
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {ELEC_MENCION.map((codigoSlot) => {
+          const comodin = buscarComodin(codigoSlot);
+          if (!comodin) return null;
+          const elegido = electivasElegidas[codigoSlot];
+          const materiaResuelta = resolverComodin(comodin, tsSeleccionado, electivasElegidas);
+          const estado = getEstado(materiaResuelta, aprobadas);
+          const elegidasEnOtros = ELEC_MENCION.filter((s) => s !== codigoSlot)
+            .map((s) => electivasElegidas[s])
+            .filter(Boolean);
+          const etiqueta = ETIQUETAS_SLOT[codigoSlot];
+
+          return (
+            <div key={codigoSlot} className="border border-gray-200 rounded-lg p-3">
+              <div className="flex items-center justify-between mb-2 gap-2">
+                <span className="text-xs font-semibold text-gray-600">
+                  {etiqueta.nombre} <span className="font-normal text-gray-400">· {etiqueta.semestre}</span>
+                </span>
+              </div>
+              <select
+                value={elegido ?? ""}
+                onChange={(e) => setSlot(codigoSlot, e.target.value)}
+                className="w-full text-xs border border-gray-300 rounded-md px-2 py-1.5 bg-white mb-2"
+              >
+                <option value="">Elegir materia...</option>
+                {mallaData.electivasMencion
+                  .filter((m) => !elegidasEnOtros.includes(m.codigo))
+                  .map((m) => (
+                    <option key={m.codigo} value={m.codigo}>
+                      {m.codigo} — {m.nombre}
+                    </option>
+                  ))}
+              </select>
+              <MateriaCard
+                materia={materiaResuelta}
+                estado={estado}
+                onClick={() => elegido && estado !== "bloqueada" && toggle(materiaResuelta)}
+              />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 const TABS = [
   { id: "plan", label: "Plan de estudios" },
   { id: "electivas", label: "Electivas de mención" },
 ];
-
-const STORAGE_KEY = "malla-informatica-progreso";
-const STORAGE_KEY_TS = "malla-informatica-tecnico-superior";
 
 export default function App() {
   const [aprobadas, setAprobadas] = useState(() => {
@@ -224,20 +321,27 @@ export default function App() {
       return null;
     }
   });
+  const [electivasElegidas, setElectivasElegidas] = useState(() => {
+    try {
+      const guardado = localStorage.getItem(STORAGE_KEY_ELECTIVAS);
+      return guardado ? JSON.parse(guardado) : {};
+    } catch {
+      return {};
+    }
+  });
 
-  // Cada vez que cambian las aprobadas, las vuelve a guardar
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([...aprobadas]));
   }, [aprobadas]);
 
-  // Cada vez que cambia el Técnico Superior elegido, lo vuelve a guardar
   useEffect(() => {
-    if (tsSeleccionado) {
-      localStorage.setItem(STORAGE_KEY_TS, tsSeleccionado);
-    } else {
-      localStorage.removeItem(STORAGE_KEY_TS);
-    }
+    if (tsSeleccionado) localStorage.setItem(STORAGE_KEY_TS, tsSeleccionado);
+    else localStorage.removeItem(STORAGE_KEY_TS);
   }, [tsSeleccionado]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY_ELECTIVAS, JSON.stringify(electivasElegidas));
+  }, [electivasElegidas]);
 
   const toggle = (materia) => {
     setAprobadas((prev) => {
@@ -261,6 +365,7 @@ export default function App() {
     if (confirm("¿Reiniciar todo tu progreso?")) {
       setAprobadas(new Set());
       setTsSeleccionado(null);
+      setElectivasElegidas({});
     }
   };
 
@@ -310,7 +415,7 @@ export default function App() {
         ))}
       </div>
 
-      {/* Plan de estudios (incluye el tablero Y la elección de Técnico Superior debajo) */}
+      {/* Plan de estudios */}
       {tab === "plan" && (
         <div>
           <div className="flex gap-6 overflow-x-auto pb-4">
@@ -331,23 +436,28 @@ export default function App() {
                       </div>
                       <div className="flex flex-col gap-2">
                         {sem.materias.map((materiaOriginal) => {
-                          const esPlaceholderSinElegir =
+                          const esTS = ELEC_TS.includes(materiaOriginal.codigo);
+                          const esMencion = ELEC_MENCION.includes(materiaOriginal.codigo);
+                          const sinElegir =
                             materiaOriginal.esComodin &&
-                            !tsSeleccionado &&
-                            (materiaOriginal.codigo === "ELEC-1" || materiaOriginal.codigo === "ELEC-2");
-                          const materia = resolverMateria(materiaOriginal, tsSeleccionado);
-                          const estado = esPlaceholderSinElegir ? "habilitada" : getEstado(materia, aprobadas);
+                            ((esTS && !tsSeleccionado) ||
+                              (esMencion && !electivasElegidas[materiaOriginal.codigo]));
+                          const materia = resolverComodin(materiaOriginal, tsSeleccionado, electivasElegidas);
+                          const estado = sinElegir ? "habilitada" : getEstado(materia, aprobadas);
                           return (
                             <MateriaCard
                               key={materia.codigo}
                               materia={materia}
                               estado={estado}
                               onClick={() => {
-                                if (esPlaceholderSinElegir) {
-                                  // Ya no cambia de pestaña: lleva la vista directo a la sección de abajo
-                                  document
-                                    .getElementById("seccion-tecnico-superior")
-                                    ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                                if (sinElegir) {
+                                  if (esTS) {
+                                    document
+                                      .getElementById("seccion-tecnico-superior")
+                                      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                                  } else {
+                                    setTab("electivas");
+                                  }
                                 } else if (estado !== "bloqueada") {
                                   toggle(materia);
                                 }
@@ -376,25 +486,13 @@ export default function App() {
 
       {/* Electivas de mención */}
       {tab === "electivas" && (
-        <div>
-          <p className="text-sm text-gray-500 mb-4 max-w-xl">
-            Pool de electivas de tu mención. Se habilitan al tener el sexto semestre vencido; ocupan
-            las casillas "Electiva" del 7° y 8° semestre.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            {mallaData.electivasMencion.map((materia) => {
-              const estado = aprobadas.has(materia.codigo) ? "aprobada" : "habilitada";
-              return (
-                <MateriaCard
-                  key={materia.codigo}
-                  materia={{ ...materia, prerequisitos: [] }}
-                  estado={estado}
-                  onClick={() => toggle(materia)}
-                />
-              );
-            })}
-          </div>
-        </div>
+        <SeccionElectivasMencion
+          electivasElegidas={electivasElegidas}
+          setElectivasElegidas={setElectivasElegidas}
+          tsSeleccionado={tsSeleccionado}
+          aprobadas={aprobadas}
+          toggle={toggle}
+        />
       )}
     </div>
   );
