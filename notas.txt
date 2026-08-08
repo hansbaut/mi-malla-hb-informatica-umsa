@@ -15,6 +15,7 @@ Proximas mejoras:
 * Progresos por semestre, año, carrera 
 * Historial de selección de materias por fechas/años y aproximado de cuando se terminara la carrera 
 * Recorrido, historial de notas por materia y promedio y estadísticas de tus notas
+* Cuando llegue al 100% se ponga un efecto de felicidades por terminar tu carrera
 * Características visuales minimalistas del frontend 
 
 * mejores animaciones, mejores efectos 

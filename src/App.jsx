@@ -5,6 +5,7 @@ import mallaData from "./data/malla.json";
 const STORAGE_KEY = "malla-informatica-progreso";
 const STORAGE_KEY_TS = "malla-informatica-tecnico-superior";
 const STORAGE_KEY_ELECTIVAS = "malla-informatica-electivas-elegidas";
+const STORAGE_KEY_TEMA = "malla-informatica-tema";
 
 // --- Diccionario código -> nombre ---
 const nombresPorCodigo = {};
@@ -48,9 +49,10 @@ function getEstado(materia, aprobadas) {
 }
 
 const estilos = {
-  aprobada: "bg-green-100 border-green-400",
-  habilitada: "bg-amber-100 border-amber-400 hover:border-amber-500",
-  bloqueada: "bg-gray-100 border-gray-300 opacity-60 cursor-not-allowed",
+  aprobada: "bg-green-100 border-green-400 dark:bg-green-900/40 dark:border-green-600",
+  habilitada:
+    "bg-amber-100 border-amber-400 hover:border-amber-500 dark:bg-amber-900/30 dark:border-amber-600 dark:hover:border-amber-500",
+  bloqueada: "bg-gray-100 border-gray-300 opacity-60 cursor-not-allowed dark:bg-gray-800 dark:border-gray-700",
 };
 
 function agruparPorAnio(semestres) {
@@ -95,15 +97,18 @@ function resolverComodin(materiaOriginal, tsSeleccionado, electivasElegidas) {
 
 function Subtitulo({ materia }) {
   if (materia.requisitoEspecial) {
-    return <p className="text-[10px] text-gray-500 italic">{materia.requisitoEspecial}</p>;
+    return <p className="text-[10px] text-gray-500 dark:text-gray-400 italic">{materia.requisitoEspecial}</p>;
   }
   if (!materia.prerequisitos || materia.prerequisitos.length === 0) {
-    return <p className="text-[10px] text-gray-400 italic">Sin prerrequisitos</p>;
+    return <p className="text-[10px] text-gray-400 dark:text-gray-500 italic">Sin prerrequisitos</p>;
   }
   return (
     <div className="flex items-center gap-1 flex-wrap">
       {materia.prerequisitos.map((codigo) => (
-        <span key={codigo} className="text-[10px] font-mono bg-gray-200 text-gray-600 rounded px-1.5 py-0.5">
+        <span
+          key={codigo}
+          className="text-[10px] font-mono bg-gray-200 text-gray-600 rounded px-1.5 py-0.5 dark:bg-gray-700 dark:text-gray-300"
+        >
           {codigo}
         </span>
       ))}
@@ -121,8 +126,8 @@ function MateriaCard({ materia, estado, onClick }) {
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-xs font-mono text-gray-500">{materia.codigo}</p>
-          <p className="text-sm font-medium text-gray-800">{materia.nombre}</p>
+          <p className="text-xs font-mono text-gray-500 dark:text-gray-400">{materia.codigo}</p>
+          <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{materia.nombre}</p>
         </div>
         <input
           type="checkbox"
@@ -160,18 +165,40 @@ function CheckboxSemestre({ sem, aprobadas, onToggle }) {
   );
 }
 
+// Interruptor tipo switch: sol a la izquierda, luna a la derecha, bolita
+// deslizante que muestra sin ambigüedad en qué modo estás parado.
+function InterruptorTema({ modoOscuro, onToggle }) {
+  return (
+    <button
+      onClick={onToggle}
+      role="switch"
+      aria-checked={modoOscuro}
+      title={modoOscuro ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+      className="relative inline-flex items-center h-7 w-14 shrink-0 rounded-full border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 transition-colors"
+    >
+      <span className="absolute left-1.5 text-[10px] leading-none select-none">☀️</span>
+      <span className="absolute right-1.5 text-[10px] leading-none select-none">🌙</span>
+      <span
+        className={`inline-block h-5 w-5 rounded-full bg-white dark:bg-gray-950 shadow-sm border border-gray-200 dark:border-gray-700 transform transition-transform duration-200 ${
+          modoOscuro ? "translate-x-8" : "translate-x-1"
+        }`}
+      />
+    </button>
+  );
+}
+
 function SeccionTecnicoSuperior({ tsSeleccionado, setTsSeleccionado, aprobadas, toggle }) {
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-gray-500 max-w-xl">
+        <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xl">
           Al elegir una salida, sus materias reemplazan automáticamente "Electiva I" y "Electiva II"
           del 5° y 6° semestre, arriba en tu plan.
         </p>
         <select
           value={tsSeleccionado ?? ""}
           onChange={(e) => setTsSeleccionado(e.target.value || null)}
-          className="text-sm border border-gray-300 rounded-md px-2 py-1.5 bg-white"
+          className="text-sm border border-gray-300 rounded-md px-2 py-1.5 bg-white text-gray-800 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
         >
           <option value="">Sin elegir</option>
           {mallaData.tecnicosSuperiores.map((track) => (
@@ -187,17 +214,19 @@ function SeccionTecnicoSuperior({ tsSeleccionado, setTsSeleccionado, aprobadas, 
           return (
             <div
               key={track.nombre}
-              className={`w-full rounded-lg p-2 transition-shadow ${seleccionado ? "ring-2 ring-blue-500" : ""}`}
+              className={`w-full rounded-lg p-2 transition-shadow ${
+                seleccionado ? "ring-2 ring-blue-500" : ""
+              }`}
             >
               <div className="flex items-center justify-between mb-2">
                 <h3
                   onClick={() => setTsSeleccionado(track.nombre)}
-                  className="text-sm font-semibold text-gray-700 cursor-pointer hover:text-blue-600"
+                  className="text-sm font-semibold text-gray-700 dark:text-gray-200 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
                 >
                   {track.nombre}
                 </h3>
                 {seleccionado && (
-                  <span className="text-[10px] font-medium text-blue-600 bg-blue-50 rounded-full px-2 py-0.5">
+                  <span className="text-[10px] font-medium text-blue-600 bg-blue-50 rounded-full px-2 py-0.5 dark:bg-blue-900/40 dark:text-blue-300">
                     Elegido
                   </span>
                 )}
@@ -237,12 +266,12 @@ function SeccionElectivasMencion({ electivasElegidas, setElectivasElegidas, tsSe
 
   return (
     <div>
-      <p className="text-sm text-gray-500 mb-1 max-w-xl">
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-1 max-w-xl">
         Elige qué electiva de tu mención va en cada casillero del 7° y 8° semestre. Una vez elegida,
         se refleja arriba en el Plan de estudios. No puedes elegir la misma electiva en dos
         casilleros distintos.
       </p>
-      <p className="text-xs text-gray-400 italic mb-4 max-w-xl">
+      <p className="text-xs text-gray-400 dark:text-gray-500 italic mb-4 max-w-xl">
         Nota: esto arma tu plan ideal — en la práctica, la universidad podría no abrir una electiva
         puntual si no se junta un mínimo de estudiantes inscritos.
       </p>
@@ -259,16 +288,17 @@ function SeccionElectivasMencion({ electivasElegidas, setElectivasElegidas, tsSe
           const etiqueta = ETIQUETAS_SLOT[codigoSlot];
 
           return (
-            <div key={codigoSlot} className="border border-gray-200 rounded-lg p-3">
+            <div key={codigoSlot} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
               <div className="flex items-center justify-between mb-2 gap-2">
-                <span className="text-xs font-semibold text-gray-600">
-                  {etiqueta.nombre} <span className="font-normal text-gray-400">· {etiqueta.semestre}</span>
+                <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">
+                  {etiqueta.nombre}{" "}
+                  <span className="font-normal text-gray-400 dark:text-gray-500">· {etiqueta.semestre}</span>
                 </span>
               </div>
               <select
                 value={elegido ?? ""}
                 onChange={(e) => setSlot(codigoSlot, e.target.value)}
-                className="w-full text-xs border border-gray-300 rounded-md px-2 py-1.5 bg-white mb-2"
+                className="w-full text-xs border border-gray-300 rounded-md px-2 py-1.5 bg-white text-gray-800 mb-2 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100"
               >
                 <option value="">Elegir materia...</option>
                 {mallaData.electivasMencion
@@ -322,6 +352,13 @@ export default function App() {
       return {};
     }
   });
+  const [modoOscuro, setModoOscuro] = useState(() => {
+    try {
+      return localStorage.getItem(STORAGE_KEY_TEMA) === "oscuro";
+    } catch {
+      return false;
+    }
+  });
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([...aprobadas]));
@@ -335,6 +372,13 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY_ELECTIVAS, JSON.stringify(electivasElegidas));
   }, [electivasElegidas]);
+
+  // Prende/apaga la clase "dark" en <html>, que activa todas las clases
+  // dark: de Tailwind en toda la app, y guarda la preferencia para la próxima visita.
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", modoOscuro);
+    localStorage.setItem(STORAGE_KEY_TEMA, modoOscuro ? "oscuro" : "claro");
+  }, [modoOscuro]);
 
   const toggle = (materia) => {
     setAprobadas((prev) => {
@@ -375,42 +419,45 @@ export default function App() {
   };
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
+    <div className="p-8 bg-gray-50 dark:bg-gray-950 min-h-screen transition-colors">
       {/* Encabezado */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">{mallaData.carrera}</h1>
-          <p className="text-sm text-gray-500">Mención: {mallaData.mencion}</p>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-50">{mallaData.carrera}</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Mención: {mallaData.mencion}</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="w-40 h-2 rounded-full bg-gray-200 overflow-hidden">
+          <div className="w-40 h-2 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden">
             <div className="h-full bg-green-500 transition-all duration-500" style={{ width: `${pct}%` }} />
           </div>
-          <span className="text-xs font-mono text-gray-500 whitespace-nowrap">
+          <span className="text-xs font-mono text-gray-500 dark:text-gray-400 whitespace-nowrap">
             {pct}% ({aprobadasCore}/{totalCore})
           </span>
+          <InterruptorTema modoOscuro={modoOscuro} onToggle={() => setModoOscuro((v) => !v)} />
           <button
             onClick={reset}
-            className="text-xs font-mono text-gray-500 border border-gray-300 rounded-md px-3 py-1.5 hover:bg-gray-100"
+            className="text-xs font-mono text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             Reiniciar
           </button>
         </div>
       </div>
 
-      {/* Plan de estudios: SIEMPRE visible, ya no depende de ninguna pestaña */}
+      {/* Plan de estudios: siempre visible */}
       <div className="flex gap-6 overflow-x-auto pb-4">
         {anios.map((anio) => (
           <div key={anio.nombre}>
-            <h2 className="text-sm font-semibold text-gray-500 mb-2 uppercase tracking-wide">{anio.nombre}</h2>
+            <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">
+              {anio.nombre}
+            </h2>
             <div className="flex gap-4">
               {anio.semestres.map((sem) => (
                 <div key={sem.numero} className="w-64 shrink-0">
                   <div className="flex items-center justify-between mb-2 gap-2">
-                    <h3 className="text-sm font-semibold text-gray-700">{sem.nombre}</h3>
+                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{sem.nombre}</h3>
                     <div className="flex items-center gap-2">
                       <CheckboxSemestre sem={sem} aprobadas={aprobadas} onToggle={() => toggleSemestre(sem)} />
-                      <span className="text-[10px] font-mono text-gray-400 bg-gray-200 rounded-full px-2 py-0.5">
+                      <span className="text-[10px] font-mono text-gray-400 bg-gray-200 rounded-full px-2 py-0.5 dark:bg-gray-800 dark:text-gray-400">
                         {sem.materias.length}
                       </span>
                     </div>
@@ -447,15 +494,17 @@ export default function App() {
         ))}
       </div>
 
-      {/* Sección inferior: sub-pestañas Técnico Superior / Electivas de mención */}
-      <div id="seccion-inferior" className="mt-8 pt-6 border-t border-gray-200">
+      {/* Sección inferior: sub-pestañas */}
+      <div id="seccion-inferior" className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
         <div className="flex gap-1 mb-4">
           {SUBTABS.map((t) => (
             <button
               key={t.id}
               onClick={() => setSubTab(t.id)}
               className={`text-sm font-medium rounded-md px-3 py-1.5 transition-colors ${
-                subTab === t.id ? "bg-blue-100 text-blue-700" : "text-gray-500 hover:bg-gray-100"
+                subTab === t.id
+                  ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
+                  : "text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
               }`}
             >
               {t.label}
