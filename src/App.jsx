@@ -165,8 +165,6 @@ function CheckboxSemestre({ sem, aprobadas, onToggle }) {
   );
 }
 
-// Interruptor tipo switch: sol a la izquierda, luna a la derecha, bolita
-// deslizante que muestra sin ambigüedad en qué modo estás parado.
 function InterruptorTema({ modoOscuro, onToggle }) {
   return (
     <button
@@ -373,8 +371,6 @@ export default function App() {
     localStorage.setItem(STORAGE_KEY_ELECTIVAS, JSON.stringify(electivasElegidas));
   }, [electivasElegidas]);
 
-  // Prende/apaga la clase "dark" en <html>, que activa todas las clases
-  // dark: de Tailwind en toda la app, y guarda la preferencia para la próxima visita.
   useEffect(() => {
     document.documentElement.classList.toggle("dark", modoOscuro);
     localStorage.setItem(STORAGE_KEY_TEMA, modoOscuro ? "oscuro" : "claro");
@@ -443,55 +439,61 @@ export default function App() {
         </div>
       </div>
 
-      {/* Plan de estudios: siempre visible */}
-      <div className="flex gap-6 overflow-x-auto pb-4">
-        {anios.map((anio) => (
-          <div key={anio.nombre}>
-            <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">
-              {anio.nombre}
-            </h2>
-            <div className="flex gap-4">
-              {anio.semestres.map((sem) => (
-                <div key={sem.numero} className="w-64 shrink-0">
-                  <div className="flex items-center justify-between mb-2 gap-2">
-                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{sem.nombre}</h3>
-                    <div className="flex items-center gap-2">
-                      <CheckboxSemestre sem={sem} aprobadas={aprobadas} onToggle={() => toggleSemestre(sem)} />
-                      <span className="text-[10px] font-mono text-gray-400 bg-gray-200 rounded-full px-2 py-0.5 dark:bg-gray-800 dark:text-gray-400">
-                        {sem.materias.length}
-                      </span>
+      {/* Panel del tablero: envuelve todo el plan en una caja grande */}
+      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/40 p-4">
+        <div className="malla-scroll flex gap-6 overflow-x-auto pb-3">
+          {anios.map((anio) => (
+            <div key={anio.nombre} className="flex flex-col">
+              {/* Encabezado de Año: caja con borde, ocupa todo el ancho de sus semestres */}
+              <div className="mb-2 rounded-lg border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/30 py-1.5 text-center">
+                <h2 className="text-xs font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider">
+                  {anio.nombre}
+                </h2>
+              </div>
+              <div className="flex gap-4">
+                {anio.semestres.map((sem) => (
+                  <div key={sem.numero} className="w-64 shrink-0">
+                    {/* Encabezado de Semestre: también en caja, título independiente */}
+                    <div className="mb-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 flex items-center justify-between gap-2">
+                      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{sem.nombre}</h3>
+                      <div className="flex items-center gap-2">
+                        <CheckboxSemestre sem={sem} aprobadas={aprobadas} onToggle={() => toggleSemestre(sem)} />
+                        <span className="text-[10px] font-mono text-gray-400 bg-gray-200 rounded-full px-2 py-0.5 dark:bg-gray-800 dark:text-gray-400">
+                          {sem.materias.length}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      {sem.materias.map((materiaOriginal) => {
+                        const esTS = ELEC_TS.includes(materiaOriginal.codigo);
+                        const esMencion = ELEC_MENCION.includes(materiaOriginal.codigo);
+                        const sinElegir =
+                          materiaOriginal.esComodin &&
+                          ((esTS && !tsSeleccionado) || (esMencion && !electivasElegidas[materiaOriginal.codigo]));
+                        const materia = resolverComodin(materiaOriginal, tsSeleccionado, electivasElegidas);
+                        const estado = sinElegir ? "habilitada" : getEstado(materia, aprobadas);
+                        return (
+                          <MateriaCard
+                            key={materia.codigo}
+                            materia={materia}
+                            estado={estado}
+                            onClick={() => {
+                              if (sinElegir) {
+                                irASeccion(esTS ? "ts" : "electivas");
+                              } else if (estado !== "bloqueada") {
+                                toggle(materia);
+                              }
+                            }}
+                          />
+                        );
+                      })}
                     </div>
                   </div>
-                  <div className="flex flex-col gap-2">
-                    {sem.materias.map((materiaOriginal) => {
-                      const esTS = ELEC_TS.includes(materiaOriginal.codigo);
-                      const esMencion = ELEC_MENCION.includes(materiaOriginal.codigo);
-                      const sinElegir =
-                        materiaOriginal.esComodin &&
-                        ((esTS && !tsSeleccionado) || (esMencion && !electivasElegidas[materiaOriginal.codigo]));
-                      const materia = resolverComodin(materiaOriginal, tsSeleccionado, electivasElegidas);
-                      const estado = sinElegir ? "habilitada" : getEstado(materia, aprobadas);
-                      return (
-                        <MateriaCard
-                          key={materia.codigo}
-                          materia={materia}
-                          estado={estado}
-                          onClick={() => {
-                            if (sinElegir) {
-                              irASeccion(esTS ? "ts" : "electivas");
-                            } else if (estado !== "bloqueada") {
-                              toggle(materia);
-                            }
-                          }}
-                        />
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Sección inferior: sub-pestañas */}

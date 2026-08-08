@@ -1,3 +1,26 @@
 @tailwind base; 
 @tailwind components; 
 @tailwind utilities; 
+
+/* Scrollbar personalizado del tablero de la malla, adaptado a modo claro/oscuro */
+.malla-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #93c5fd transparent; /* Firefox: pulgar azul clarito, riel transparente */
+}
+.dark .malla-scroll {
+  scrollbar-color: #3b82f6 transparent; /* Firefox modo oscuro: azul más fuerte */
+}
+.malla-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+.malla-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.malla-scroll::-webkit-scrollbar-thumb {
+  background-color: #93c5fd;
+  border-radius: 9999px;
+}
+.dark .malla-scroll::-webkit-scrollbar-thumb {
+  background-color: #3b82f6;
+}
+
