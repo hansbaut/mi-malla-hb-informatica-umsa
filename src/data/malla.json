@@ -83,7 +83,7 @@
         { "codigo": "INF-371", "nombre": "Seguridad de la información", "prerequisitos": ["INF-242"] },
         { "codigo": "INF-372", "nombre": "Inteligencia Artificial", "prerequisitos": ["INF-262"] },
         { "codigo": "INF-373", "nombre": "Métodos numéricos I", "prerequisitos": ["INF-126"] },
-        { "codigo": "TRA-374", "nombre": "Práctica profesional", "prerequisitos": [], "requisitoEspecial": "Quinto semestre vencido" },
+        { "codigo": "TRA-374", "nombre": "Práctica profesional", "prerequisitos": [], "requisitoEspecial": "Sexto semestre vencido" },
         { "codigo": "ELEC-3", "nombre": "Electiva III (mención)", "prerequisitos": [], "requisitoEspecial": "Sexto semestre vencido", "esComodin": true },
         { "codigo": "ELEC-4", "nombre": "Electiva IV (mención)", "prerequisitos": [], "requisitoEspecial": "Sexto semestre vencido", "esComodin": true }
       ]

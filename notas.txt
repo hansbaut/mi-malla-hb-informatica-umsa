@@ -1,4 +1,20 @@
 
-
-
 npm run dev
+
+git status
+git add .
+git commit -m "..."
+git push
+
+
+
+
+Proximas mejoras: 
+*
+* Modo claro, modo oscuro
+* Progresos por semestre, año, carrera 
+* Historial de selección de materias por fechas/años y aproximado de cuando se terminara la carrera 
+* Recorrido, historial de notas por materia y promedio y estadísticas de tus notas
+* Características visuales minimalistas del frontend 
+
+* mejores animaciones, mejores efectos 

@@ -72,8 +72,6 @@ function buscarComodin(codigo) {
   return null;
 }
 
-// Resuelve un comodín (ELEC-1..6) a la materia real elegida, ya sea de Técnico
-// Superior (ELEC-1/2) o del pool de electivas de mención (ELEC-3..6).
 function resolverComodin(materiaOriginal, tsSeleccionado, electivasElegidas) {
   if (!materiaOriginal.esComodin) return materiaOriginal;
 
@@ -89,7 +87,6 @@ function resolverComodin(materiaOriginal, tsSeleccionado, electivasElegidas) {
     if (!elegido) return materiaOriginal;
     const real = mallaData.electivasMencion.find((m) => m.codigo === elegido);
     if (!real) return materiaOriginal;
-    // Conserva el requisito real (ej. "Sexto semestre vencido") del casillero original
     return { ...real, prerequisitos: [], requisitoEspecial: materiaOriginal.requisitoEspecial };
   }
 
@@ -165,15 +162,12 @@ function CheckboxSemestre({ sem, aprobadas, onToggle }) {
 
 function SeccionTecnicoSuperior({ tsSeleccionado, setTsSeleccionado, aprobadas, toggle }) {
   return (
-    <div className="mt-8 pt-6 border-t border-gray-200">
+    <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-base font-semibold text-gray-800">Elige tu Técnico Superior</h2>
-          <p className="text-sm text-gray-500 mt-0.5 max-w-xl">
-            Al elegir una salida, sus materias reemplazan automáticamente "Electiva I" y "Electiva II"
-            del 5° y 6° semestre, arriba en tu plan.
-          </p>
-        </div>
+        <p className="text-sm text-gray-500 max-w-xl">
+          Al elegir una salida, sus materias reemplazan automáticamente "Electiva I" y "Electiva II"
+          del 5° y 6° semestre, arriba en tu plan.
+        </p>
         <select
           value={tsSeleccionado ?? ""}
           onChange={(e) => setTsSeleccionado(e.target.value || null)}
@@ -229,7 +223,6 @@ function SeccionTecnicoSuperior({ tsSeleccionado, setTsSeleccionado, aprobadas, 
   );
 }
 
-// Etiquetas amigables para cada casillero, con su semestre
 const ETIQUETAS_SLOT = {
   "ELEC-3": { nombre: "Electiva III", semestre: "7° semestre" },
   "ELEC-4": { nombre: "Electiva IV", semestre: "7° semestre" },
@@ -246,8 +239,8 @@ function SeccionElectivasMencion({ electivasElegidas, setElectivasElegidas, tsSe
     <div>
       <p className="text-sm text-gray-500 mb-1 max-w-xl">
         Elige qué electiva de tu mención va en cada casillero del 7° y 8° semestre. Una vez elegida,
-        se refleja arriba en el Plan de estudios con su sigla, nombre y estado real. No puedes elegir
-        la misma electiva en dos casilleros distintos.
+        se refleja arriba en el Plan de estudios. No puedes elegir la misma electiva en dos
+        casilleros distintos.
       </p>
       <p className="text-xs text-gray-400 italic mb-4 max-w-xl">
         Nota: esto arma tu plan ideal — en la práctica, la universidad podría no abrir una electiva
@@ -299,8 +292,8 @@ function SeccionElectivasMencion({ electivasElegidas, setElectivasElegidas, tsSe
   );
 }
 
-const TABS = [
-  { id: "plan", label: "Plan de estudios" },
+const SUBTABS = [
+  { id: "ts", label: "Técnico Superior" },
   { id: "electivas", label: "Electivas de mención" },
 ];
 
@@ -313,7 +306,7 @@ export default function App() {
       return new Set();
     }
   });
-  const [tab, setTab] = useState("plan");
+  const [subTab, setSubTab] = useState("ts");
   const [tsSeleccionado, setTsSeleccionado] = useState(() => {
     try {
       return localStorage.getItem(STORAGE_KEY_TS) || null;
@@ -376,6 +369,11 @@ export default function App() {
 
   const anios = agruparPorAnio(mallaData.semestres);
 
+  const irASeccion = (destino) => {
+    setSubTab(destino);
+    document.getElementById("seccion-inferior")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
       {/* Encabezado */}
@@ -400,100 +398,90 @@ export default function App() {
         </div>
       </div>
 
-      {/* Pestañas */}
-      <div className="flex gap-1 mb-6">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`text-sm font-medium rounded-md px-3 py-1.5 transition-colors ${
-              tab === t.id ? "bg-blue-100 text-blue-700" : "text-gray-500 hover:bg-gray-100"
-            }`}
-          >
-            {t.label}
-          </button>
+      {/* Plan de estudios: SIEMPRE visible, ya no depende de ninguna pestaña */}
+      <div className="flex gap-6 overflow-x-auto pb-4">
+        {anios.map((anio) => (
+          <div key={anio.nombre}>
+            <h2 className="text-sm font-semibold text-gray-500 mb-2 uppercase tracking-wide">{anio.nombre}</h2>
+            <div className="flex gap-4">
+              {anio.semestres.map((sem) => (
+                <div key={sem.numero} className="w-64 shrink-0">
+                  <div className="flex items-center justify-between mb-2 gap-2">
+                    <h3 className="text-sm font-semibold text-gray-700">{sem.nombre}</h3>
+                    <div className="flex items-center gap-2">
+                      <CheckboxSemestre sem={sem} aprobadas={aprobadas} onToggle={() => toggleSemestre(sem)} />
+                      <span className="text-[10px] font-mono text-gray-400 bg-gray-200 rounded-full px-2 py-0.5">
+                        {sem.materias.length}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {sem.materias.map((materiaOriginal) => {
+                      const esTS = ELEC_TS.includes(materiaOriginal.codigo);
+                      const esMencion = ELEC_MENCION.includes(materiaOriginal.codigo);
+                      const sinElegir =
+                        materiaOriginal.esComodin &&
+                        ((esTS && !tsSeleccionado) || (esMencion && !electivasElegidas[materiaOriginal.codigo]));
+                      const materia = resolverComodin(materiaOriginal, tsSeleccionado, electivasElegidas);
+                      const estado = sinElegir ? "habilitada" : getEstado(materia, aprobadas);
+                      return (
+                        <MateriaCard
+                          key={materia.codigo}
+                          materia={materia}
+                          estado={estado}
+                          onClick={() => {
+                            if (sinElegir) {
+                              irASeccion(esTS ? "ts" : "electivas");
+                            } else if (estado !== "bloqueada") {
+                              toggle(materia);
+                            }
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         ))}
       </div>
 
-      {/* Plan de estudios */}
-      {tab === "plan" && (
-        <div>
-          <div className="flex gap-6 overflow-x-auto pb-4">
-            {anios.map((anio) => (
-              <div key={anio.nombre}>
-                <h2 className="text-sm font-semibold text-gray-500 mb-2 uppercase tracking-wide">{anio.nombre}</h2>
-                <div className="flex gap-4">
-                  {anio.semestres.map((sem) => (
-                    <div key={sem.numero} className="w-64 shrink-0">
-                      <div className="flex items-center justify-between mb-2 gap-2">
-                        <h3 className="text-sm font-semibold text-gray-700">{sem.nombre}</h3>
-                        <div className="flex items-center gap-2">
-                          <CheckboxSemestre sem={sem} aprobadas={aprobadas} onToggle={() => toggleSemestre(sem)} />
-                          <span className="text-[10px] font-mono text-gray-400 bg-gray-200 rounded-full px-2 py-0.5">
-                            {sem.materias.length}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        {sem.materias.map((materiaOriginal) => {
-                          const esTS = ELEC_TS.includes(materiaOriginal.codigo);
-                          const esMencion = ELEC_MENCION.includes(materiaOriginal.codigo);
-                          const sinElegir =
-                            materiaOriginal.esComodin &&
-                            ((esTS && !tsSeleccionado) ||
-                              (esMencion && !electivasElegidas[materiaOriginal.codigo]));
-                          const materia = resolverComodin(materiaOriginal, tsSeleccionado, electivasElegidas);
-                          const estado = sinElegir ? "habilitada" : getEstado(materia, aprobadas);
-                          return (
-                            <MateriaCard
-                              key={materia.codigo}
-                              materia={materia}
-                              estado={estado}
-                              onClick={() => {
-                                if (sinElegir) {
-                                  if (esTS) {
-                                    document
-                                      .getElementById("seccion-tecnico-superior")
-                                      ?.scrollIntoView({ behavior: "smooth", block: "start" });
-                                  } else {
-                                    setTab("electivas");
-                                  }
-                                } else if (estado !== "bloqueada") {
-                                  toggle(materia);
-                                }
-                              }}
-                            />
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div id="seccion-tecnico-superior">
-            <SeccionTecnicoSuperior
-              tsSeleccionado={tsSeleccionado}
-              setTsSeleccionado={setTsSeleccionado}
-              aprobadas={aprobadas}
-              toggle={toggle}
-            />
-          </div>
+      {/* Sección inferior: sub-pestañas Técnico Superior / Electivas de mención */}
+      <div id="seccion-inferior" className="mt-8 pt-6 border-t border-gray-200">
+        <div className="flex gap-1 mb-4">
+          {SUBTABS.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setSubTab(t.id)}
+              className={`text-sm font-medium rounded-md px-3 py-1.5 transition-colors ${
+                subTab === t.id ? "bg-blue-100 text-blue-700" : "text-gray-500 hover:bg-gray-100"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
-      )}
 
-      {/* Electivas de mención */}
-      {tab === "electivas" && (
-        <SeccionElectivasMencion
-          electivasElegidas={electivasElegidas}
-          setElectivasElegidas={setElectivasElegidas}
-          tsSeleccionado={tsSeleccionado}
-          aprobadas={aprobadas}
-          toggle={toggle}
-        />
-      )}
+        {subTab === "ts" && (
+          <SeccionTecnicoSuperior
+            tsSeleccionado={tsSeleccionado}
+            setTsSeleccionado={setTsSeleccionado}
+            aprobadas={aprobadas}
+            toggle={toggle}
+          />
+        )}
+
+        {subTab === "electivas" && (
+          <SeccionElectivasMencion
+            electivasElegidas={electivasElegidas}
+            setElectivasElegidas={setElectivasElegidas}
+            tsSeleccionado={tsSeleccionado}
+            aprobadas={aprobadas}
+            toggle={toggle}
+          />
+        )}
+      </div>
     </div>
   );
 }
