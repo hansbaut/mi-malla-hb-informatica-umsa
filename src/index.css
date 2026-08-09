@@ -24,3 +24,26 @@
   background-color: #3b82f6;
 }
 
+/* Animación de confeti cayendo, para la pantalla de felicitación al 100% */
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-10vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) rotate(720deg);
+    opacity: 0.9;
+  }
+}
+.confetti-piece {
+  position: fixed;
+  top: 0;
+  width: 8px;
+  height: 14px;
+  opacity: 0.9;
+  animation-name: confetti-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: 1;
+  pointer-events: none;
+}
+
