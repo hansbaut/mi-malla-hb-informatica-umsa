@@ -117,11 +117,12 @@ function Subtitulo({ materia }) {
 }
 
 function MateriaCard({ materia, estado, onClick }) {
+  const interactiva = estado !== "bloqueada";
   return (
     <div
       onClick={onClick}
-      className={`min-h-[76px] border rounded-lg px-3 py-2 flex flex-col justify-between gap-1 transition-colors ${
-        estado === "bloqueada" ? "" : "cursor-pointer"
+      className={`min-h-[76px] border rounded-lg px-3 py-2 flex flex-col justify-between gap-1 transition-all duration-150 ${
+        interactiva ? "cursor-pointer hover:shadow-md hover:-translate-y-0.5" : ""
       } ${estilos[estado]}`}
     >
       <div className="flex items-start justify-between gap-2">
@@ -439,12 +440,11 @@ export default function App() {
         </div>
       </div>
 
-      {/* Panel del tablero: envuelve todo el plan en una caja grande */}
-      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/40 p-4">
+      {/* Panel del tablero */}
+      <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/40 p-4 shadow-sm">
         <div className="malla-scroll flex gap-6 overflow-x-auto pb-3">
           {anios.map((anio) => (
             <div key={anio.nombre} className="flex flex-col">
-              {/* Encabezado de Año: caja con borde, ocupa todo el ancho de sus semestres */}
               <div className="mb-2 rounded-lg border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/30 py-1.5 text-center">
                 <h2 className="text-xs font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider">
                   {anio.nombre}
@@ -452,18 +452,21 @@ export default function App() {
               </div>
               <div className="flex gap-4">
                 {anio.semestres.map((sem) => (
-                  <div key={sem.numero} className="w-64 shrink-0">
-                    {/* Encabezado de Semestre: también en caja, título independiente */}
-                    <div className="mb-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 flex items-center justify-between gap-2">
+                  // Contenedor ÚNICO por semestre: encabezado y materias comparten la misma caja.
+                  <div
+                    key={sem.numero}
+                    className="w-64 shrink-0 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden flex flex-col"
+                  >
+                    <div className="px-3 py-2 flex items-center justify-between gap-2 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                       <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{sem.nombre}</h3>
                       <div className="flex items-center gap-2">
                         <CheckboxSemestre sem={sem} aprobadas={aprobadas} onToggle={() => toggleSemestre(sem)} />
-                        <span className="text-[10px] font-mono text-gray-400 bg-gray-200 rounded-full px-2 py-0.5 dark:bg-gray-800 dark:text-gray-400">
+                        <span className="text-[10px] font-mono text-gray-500 bg-gray-200 rounded-full px-2 py-0.5 dark:bg-gray-700 dark:text-gray-300">
                           {sem.materias.length}
                         </span>
                       </div>
                     </div>
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-2 p-2">
                       {sem.materias.map((materiaOriginal) => {
                         const esTS = ELEC_TS.includes(materiaOriginal.codigo);
                         const esMencion = ELEC_MENCION.includes(materiaOriginal.codigo);
