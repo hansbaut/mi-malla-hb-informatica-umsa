@@ -186,6 +186,62 @@ function InterruptorTema({ modoOscuro, onToggle }) {
   );
 }
 
+const COLORES_CONFETTI = ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#a855f7", "#ec4899"];
+
+function Confetti({ cantidad = 70 }) {
+  const [piezas] = useState(() =>
+    Array.from({ length: cantidad }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      color: COLORES_CONFETTI[i % COLORES_CONFETTI.length],
+      duracion: 2.5 + Math.random() * 1.5,
+      retraso: Math.random() * 0.6,
+    }))
+  );
+
+  return (
+    <div className="fixed inset-0 overflow-hidden z-[60]" aria-hidden="true">
+      {piezas.map((p) => (
+        <span
+          key={p.id}
+          className="confetti-piece"
+          style={{
+            left: `${p.left}%`,
+            backgroundColor: p.color,
+            animationDuration: `${p.duracion}s`,
+            animationDelay: `${p.retraso}s`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ModalFelicitacion({ onCerrar }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <Confetti />
+      <div className="relative z-10 max-w-md w-full rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-8 text-center shadow-xl">
+        <p className="text-5xl mb-3">🎓</p>
+        <h2 className="text-xl font-bold text-gray-800 dark:text-gray-50 mb-2">¡Felicidades!</h2>
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">
+          Completaste el 100% del plan de estudios de Informática — Desarrollo de Software e Innovación
+          Tecnológica.
+        </p>
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
+          No fue fácil, y llevó tiempo real de esfuerzo. Este logro es tuyo.
+        </p>
+        <button
+          onClick={onCerrar}
+          className="rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-5 py-2.5 transition-colors"
+        >
+          Cerrar
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function SeccionTecnicoSuperior({ tsSeleccionado, setTsSeleccionado, aprobadas, toggle }) {
   return (
     <div>
@@ -358,6 +414,7 @@ export default function App() {
       return false;
     }
   });
+  const [mostrarFestejo, setMostrarFestejo] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([...aprobadas]));
@@ -408,6 +465,15 @@ export default function App() {
   const aprobadasCore = coreCourses.filter((m) => aprobadas.has(m.codigo)).length;
   const pct = totalCore ? Math.round((aprobadasCore / totalCore) * 100) : 0;
 
+  // Detecta el MOMENTO en que pasas de <100% a 100% (no se dispara si ya cargaste con 100% hecho)
+  const pctAnteriorRef = useRef(pct);
+  useEffect(() => {
+    if (pct === 100 && pctAnteriorRef.current < 100) {
+      setMostrarFestejo(true);
+    }
+    pctAnteriorRef.current = pct;
+  }, [pct]);
+
   const anios = agruparPorAnio(mallaData.semestres);
 
   const irASeccion = (destino) => {
@@ -417,19 +483,26 @@ export default function App() {
 
   return (
     <div className="p-8 bg-gray-50 dark:bg-gray-950 min-h-screen transition-colors">
+      {mostrarFestejo && <ModalFelicitacion onCerrar={() => setMostrarFestejo(false)} />}
+
       {/* Encabezado */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-50">{mallaData.carrera}</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">Mención: {mallaData.mencion}</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="w-40 h-2 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden">
-            <div className="h-full bg-green-500 transition-all duration-500" style={{ width: `${pct}%` }} />
+          <div className="flex items-center gap-2">
+            <div className="w-32 h-2 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-blue-500 via-emerald-500 to-green-500 transition-all duration-700 ease-out"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <span className="text-xs font-mono text-gray-500 dark:text-gray-400 whitespace-nowrap">
+              {pct}% ({aprobadasCore}/{totalCore})
+            </span>
           </div>
-          <span className="text-xs font-mono text-gray-500 dark:text-gray-400 whitespace-nowrap">
-            {pct}% ({aprobadasCore}/{totalCore})
-          </span>
           <InterruptorTema modoOscuro={modoOscuro} onToggle={() => setModoOscuro((v) => !v)} />
           <button
             onClick={reset}
@@ -452,7 +525,6 @@ export default function App() {
               </div>
               <div className="flex gap-4">
                 {anio.semestres.map((sem) => (
-                  // Contenedor ÚNICO por semestre: encabezado y materias comparten la misma caja.
                   <div
                     key={sem.numero}
                     className="w-64 shrink-0 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden flex flex-col"
