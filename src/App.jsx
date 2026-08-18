@@ -200,7 +200,7 @@ function Confetti({ cantidad = 70 }) {
   );
 
   return (
-    <div className="fixed inset-0 overflow-hidden z-[60]" aria-hidden="true">
+    <div className="fixed inset-0 overflow-hidden z-[60] pointer-events-none" aria-hidden="true">
       {piezas.map((p) => (
         <span
           key={p.id}
@@ -492,15 +492,18 @@ export default function App() {
           <p className="text-sm text-gray-500 dark:text-gray-400">Mención: {mallaData.mencion}</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-32 h-2 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden">
+          <div className="flex items-center gap-3 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2 shadow-sm">
+            <div className="w-40 h-2.5 rounded-full bg-gray-200 dark:bg-gray-800 overflow-hidden">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-blue-500 via-emerald-500 to-green-500 transition-all duration-700 ease-out"
                 style={{ width: `${pct}%` }}
               />
             </div>
-            <span className="text-xs font-mono text-gray-500 dark:text-gray-400 whitespace-nowrap">
-              {pct}% ({aprobadasCore}/{totalCore})
+            <span className="text-sm font-bold text-gray-800 dark:text-gray-100 whitespace-nowrap tabular-nums">
+              {pct}%
+            </span>
+            <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap hidden sm:inline">
+              {aprobadasCore}/{totalCore}
             </span>
           </div>
           <InterruptorTema modoOscuro={modoOscuro} onToggle={() => setModoOscuro((v) => !v)} />
